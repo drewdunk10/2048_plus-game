@@ -31,7 +31,7 @@ winMsg    BYTE "Target score reached. You win!", 0
 
 .code
 ;-----------------------------------------------------
-printGrid PROC
+PrintGrid PROC
 ;
 ; Prints the empty game board in the console.
 ; Receives: divider and block_row BYTE arrays
@@ -68,11 +68,11 @@ printGrid PROC
           loop build_row
           ret
 
-printGrid ENDP
+PrintGrid ENDP
 
 
 ;-----------------------------------------------------
-updateScoreBoard PROC
+UpdateScoreBoard PROC
 ;
 ; Re-displays each of the game variables on the console.
 ; Receives: values of current_score, target_score, 
@@ -108,17 +108,17 @@ updateScoreBoard PROC
      call Crlf
 
      ret 
-updateScoreBoard ENDP
+UpdateScoreBoard ENDP
 
 
 main PROC PUBLIC
     call Randomize                 ; Set seed.
-    call printGrid                 ; Display empty board.
+    call PrintGrid                 ; Display empty board.
 
     ; Initialize grid with two tiles. TODO: Allow user to set?
     call UpdateGrid
     call UpdateGrid
-    call updateScoreBoard
+    call UpdateScoreBoard
 
     ; Main game loop
     .WHILE (tile_count < 16)
@@ -154,7 +154,7 @@ main PROC PUBLIC
 
      ; Move cursor below grid before exit.
      _exit:
-          call updateScoreBoard    ; Final update before exit.
+          call UpdateScoreBoard    ; Final update before exit.
           mov dx, 0
           mov dh, 20
           call Gotoxy
