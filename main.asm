@@ -20,6 +20,7 @@ current_score DWORD 0
 tile_count DWORD 0
 
 loseMsg	BYTE	"No moves left. Game over.", 0
+winMsg    BYTE "Target score reached. You win!", 0
 
 .code
 ; Display the game board to user
@@ -60,41 +61,45 @@ printGrid ENDP
 
 main PROC PUBLIC
     call Randomize ; set seed
-
     call printGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
+
+    ; Initialize grid with two tiles. TODO: Allow user to set?
     call UpdateGrid
     call UpdateGrid
 
-    call UpdateGrid
+    .WHILE (tile_count < 16)
+          call UserPrompt          ; Prompts user for a direction to move.
+          ; call GridMove          ; Executes move and shifts tiles.
+          ; call UpdateScoreBoard    ; Updates/Renders game variables on display.
+          
+          ; Check win condition before adding a new tile.
+          mov eax, current_score
+          .IF (eax >= target_score)
+               jmp win
+          .ENDIF
 
-    ; Lose condition
-    .IF tile_count >= 16
-         jmp game_over
-    .ENDIF
+          call UpdateGrid          ; Adds a random tile after a user move.
+    .ENDW
 
-    call UserPrompt
-
-    game_over:
-          ; Reset cursor to origin for error message.
+    lose:
+          ; Move cursor above grid for lose message.
           mov dx, 0
+          mov dh, 4
+          call Gotoxy
+          mov edx, OFFSET loseMsg
+          call WriteString
+          jmp _exit
+
+     win:
+          ; Move cursor above grid for win message.
+          mov dx, 0
+          mov dh, 4
           call Gotoxy
           mov edx, OFFSET loseMsg
           call WriteString
 
-          ; Move cursor below grid before exit.
+     ; Move cursor below grid before exit.
+     _exit:
           mov dx, 0
           mov dh, 20
           call Gotoxy

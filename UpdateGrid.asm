@@ -10,7 +10,8 @@ index_count = 16  ; 16 WORDS
 ;-----------------------------------------------------
 AddNewTile PROC
 ;
-; Adds a new tile to the array grid.
+; Adds a new tile to the array grid and renders it on
+; user's display.
 ; Receives: grid_array from main.
 ; Returns: grid_array with 1 new index filled in.
 ;-----------------------------------------------------
@@ -48,7 +49,7 @@ LOCAL randRow:BYTE, randCol:BYTE
      call RandomRange
      push eax
 
-     ; validate
+     ; Validate that random position in grod_array is empty
      mov esi, OFFSET grid_array
      xor edi, edi                ; Clear edi
      mov edi, [esi + ebx]        ; Get value at index in grid_array
@@ -59,52 +60,50 @@ LOCAL randRow:BYTE, randCol:BYTE
           jmp display
      .ENDIF
 
-     probe:  ; TODO: FIX modulus
+     ; Linearly probe for an empty index in the array.
+     probe:
           add ebx, 4            ; Check next index
           mov ax, bx
           mov bl, 64            ; Mod by size of memory (16 * 4 WORDS)
           div bl                ; Use modulus to wrap around array
 
-          ; Remainder stored in ah
-          movzx ebx, ah            ; Move new index to check into ebx
-          mov edi, [esi + ebx]
+          ; Remainder (index) is stored in ah
+          movzx ebx, ah         ; Move new index to check into ebx
+          mov edi, [esi + ebx]  ; Get value at index
           .IF edi == 0
-               jmp display
+              jmp display       ; Continue to next block to display new num
           .ELSE
-              loop probe
+              loop probe        ; Probes 16 times in worst case.
           .ENDIF
 
+     ; Display random choice on game display and in array.
      display:
-          ; Display random choice on game display and in array.
-          pop eax
+          pop eax                      ; Restore index of rand num
           mov al, [tile_choice + eax]  ; Store rand num
           mov [esi + ebx], eax         ; Store num in grid_array
-
           push eax                     ; save number to display
           
           ; Get corresponding dh and dl positions for display
           mov eax, ebx
           mov ebx, 16
-          div bl
+          div bl         ; div by 16 to get row num.
 
           ; quotient now holds row num
           movzx ecx, al
           mov dh, [dh_pos + ecx]
-          ; Shift ah into al to be used for finding column num
+
+          ; Shift ah (remainder) into al to be used for finding column num
           shr ax, 8
 
           ; divide remainder by 4 to find col num
           mov ebx, 4
-          div bl      ; mod remainder by 4
-          xor ah, ah  ; clear remainder
+          div bl
+          xor ah, ah                   ; clear remainder to get quotient
           mov dl, [dl_pos + eax]
 
-          ; Set height and width to write number.
-          call Gotoxy
-
+          call Gotoxy                  ; set height and width to write number
           pop eax                      ; restore number to display
-          call WriteDec                ; game display (console)
-          inc tile_count               ; increment global tile count
+          call WriteDec                ; display to console
 
      ret
 AddNewTile ENDP
@@ -113,13 +112,15 @@ AddNewTile ENDP
 ;-----------------------------------------------------
 UpdateGrid PROC
 ;
-; Handler for grid updates. Inserts a new value into the grid
-; array and renders it on the display.
+; Handler for grid updates between player moves. Calls 
+; AddNewTile to insert a new value into the grid array 
+; and render it on the display.
 ; Receives: grid_array from main
-; Returns: nothing
+; Returns: Increments tile_count in main
 ;-----------------------------------------------------
 
 UpdateGrid ENDP
-     call AddNewTile
+     call AddNewTile              ; add new tile to array and display
+     inc tile_count               ; increment global tile count
      ret
 END
