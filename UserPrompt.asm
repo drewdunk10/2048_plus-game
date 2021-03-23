@@ -4,6 +4,7 @@ INCLUDE UserPrompt.inc
 .data
 dirPrompt	BYTE "Enter the direction (ASWD): ", 0
 errorMsg	BYTE	"Invalid Move, must be of one of ASWD. Try again: ", 0
+clearPrompt BYTE 50 DUP(" "), 0
 
 .code
 ;-----------------------------------------------------
@@ -11,16 +12,15 @@ InputTheDir PROC
 ;
 ; Prompts user for a direction. Saves the char in dir (if valid).
 ; Receives: nothing
-; Returns: nothing
+; Returns: sets dir in main
 ;-----------------------------------------------------
 	pushad
-	mov	edx,OFFSET dirPrompt; display a prompt
+	mov edx, OFFSET dirPrompt; display a prompt
 	call	WriteString
 	call	ReadChar         	; Input the charater.
-	call WriteChar			; Display direction choice.
+	; call WriteChar			; Display direction choice.
 	mov dir, al			; Save the direction in dir.
-	call ValidateInput		; 
-	call	Crlf				; TODO: Clear the prompt.
+	call ValidateInput		; Continue prompt until valid input.
 	popad
 	ret
 InputTheDir ENDP
@@ -67,9 +67,17 @@ UserPrompt PROC
 ; Receives: nothing
 ; Returns: dir is set to a valid choice
 ;-----------------------------------------------------
+	; Get user input and validate.
 	mov dx, 0
-	call Gotoxy		; reset cursor to origin
+	call Gotoxy
 	call InputTheDir
+	
+	; Clear the prompt.
+	mov dx, 0
+	call Gotoxy
+	mov edx, OFFSET clearPrompt
+	call WriteString
+
 	ret 
 UserPrompt ENDP
 
