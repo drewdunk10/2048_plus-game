@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/24/21 17:11:56
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/23/21 13:28:14
 UserPrompt.asm						     Page 1 - 1
 
 
@@ -21,15 +21,10 @@ UserPrompt.asm						     Page 1 - 1
 			      C .LIST
 			      C 
 				INCLUDE UserPrompt.inc
-			      C .386 ; Specifies that 32-bit instructions will be used (and compiled that way).
-			      C .model flat,stdcall
-UserPrompt.inc(2) : warning A4011:multiple .MODEL directives found : .MODEL ignored
-			      C .stack 4096
 			      C ExitProcess PROTO, dwExitCode:DWORD
-			      C DumpRegs PROTO
 			      C 
 			      C UserPrompt PROTO    ; Allows for more control over stack parameters
-			      C EXTERNDEF dir:BYTE ; external definition (dir defined in main module)
+			      C EXTERNDEF dir:BYTE  ; external definition (dir defined in main module)
 			      C 
 			      C OPTION PROC:PRIVATE ; Make it so only project files can use this module
 			      C 
@@ -52,6 +47,9 @@ UserPrompt.inc(2) : warning A4011:multiple .MODEL directives found : .MODEL igno
 	   44 2E 20 54 72
 	   79 20 61 67 61
 	   69 6E 3A 20 00
+ 0000004F  00000032 [		clearPrompt BYTE 50 DUP(" "), 0
+	    20
+	   ] 00
 
  00000000			.code
 				;-----------------------------------------------------
@@ -59,94 +57,112 @@ UserPrompt.inc(2) : warning A4011:multiple .MODEL directives found : .MODEL igno
 				;
 				; Prompts user for a direction. Saves the char in dir (if valid).
 				; Receives: nothing
-				; Returns: nothing
+				; Returns: sets dir in main
 				;-----------------------------------------------------
  00000000  60				pushad
- 00000001  BA 00000000 R		mov	edx,OFFSET dirPrompt; display a prompt
+ 00000001  BA 00000000 R		mov edx, OFFSET dirPrompt; display a prompt
  00000006  E8 00000000 E		call	WriteString
  0000000B  E8 00000000 E		call	ReadChar         	; Input the charater.
- 00000010  E8 00000000 E		call WriteChar			; Display direction choice.
- 00000015  A2 00000000 E		mov dir, al			; Save the direction in dir.
- 0000001A  E8 00000007			call ValidateInput		; 
- 0000001F  E8 00000000 E		call	Crlf				; TODO: Clear the prompt.
- 00000024  61				popad
- 00000025  C3				ret
- 00000026			InputTheDir ENDP
+					; call WriteChar			; Display direction choice.
+ 00000010  A2 00000000 E		mov dir, al			; Save the direction in dir.
+ 00000015  E8 00000002			call ValidateInput		; Continue prompt until valid input.
+ 0000001A  61				popad
+ 0000001B  C3				ret
+ 0000001C			InputTheDir ENDP
 
 				;-----------------------------------------------------
- 00000026			ValidateInput PROC
+ 0000001C			ValidateInput PROC
 				;
 				; Compares input with one of the direction choices. If invalid,
 				; prompt user for another character until valid.
 				; Receives: dir points to initial direction choice.
 				; Returns: nothing
 				;-----------------------------------------------------
- 00000026  BA 0000001D R		mov edx, OFFSET errorMsg
- 0000002B  52				push edx
+ 0000001C  BA 0000001D R		mov edx, OFFSET errorMsg
+ 00000021  52				push edx
 
 					; compare character with valid choices
- 0000002C  BB 00000000			mov ebx, 0
+ 00000022  BB 00000000			mov ebx, 0
 					.WHILE ebx == 0
- 00000031  EB 4F	   *	    jmp    @C0001
- 00000033		   *@C0002:
+ 00000027  EB 4F	   *	    jmp    @C0001
+ 00000029		   *@C0002:
 						INVOKE Str_ucase, ADDR dir
- 00000033  68 00000000 E   *	    push   OFFSET dir
- 00000038  E8 00000000 E   *	    call   Str_ucase
+ 00000029  68 00000000 E   *	    push   OFFSET dir
+ 0000002E  E8 00000000 E   *	    call   Str_ucase
 						.IF dir == 'A' || dir == 'S' || dir == 'D' || dir == 'W'
- 0000003D  80 3D 00000000 E
+ 00000033  80 3D 00000000 E
 	   41		   *	    cmp    dir, 'A'
- 00000044  74 1B	   *	    je	@C0004
- 00000046  80 3D 00000000 E
+ 0000003A  74 1B	   *	    je	@C0004
+ 0000003C  80 3D 00000000 E
 	   53		   *	    cmp    dir, 'S'
- 0000004D  74 12	   *	    je	@C0004
- 0000004F  80 3D 00000000 E
+ 00000043  74 12	   *	    je	@C0004
+ 00000045  80 3D 00000000 E
 	   44		   *	    cmp    dir, 'D'
- 00000056  74 09	   *	    je	@C0004
- 00000058  80 3D 00000000 E
+ 0000004C  74 09	   *	    je	@C0004
+ 0000004E  80 3D 00000000 E
 	   57		   *	    cmp    dir, 'W'
- 0000005F  75 07	   *	    jne    @C0003
- 00000061		   *@C0004:
- 00000061  BB 00000001					mov ebx, 1
+ 00000055  75 07	   *	    jne    @C0003
+ 00000057		   *@C0004:
+ 00000057  BB 00000001					mov ebx, 1
 						.ELSE
- 00000066  EB 1A	   *	    jmp    @C0008
- 00000068		   *@C0003:
- 00000068  66| BA 0000					mov dx, 0
- 0000006C  E8 00000000 E				call Gotoxy
+ 0000005C  EB 1A	   *	    jmp    @C0008
+ 0000005E		   *@C0003:
+ 0000005E  66| BA 0000					mov dx, 0
+ 00000062  E8 00000000 E				call Gotoxy
 
- 00000071  5A						pop edx			; Restore error message.
- 00000072  E8 00000000 E				call WriteString
- 00000077  E8 00000000 E				call	ReadChar       ; Input the charater.
- 0000007C  A2 00000000 E				mov dir, al
+ 00000067  5A						pop edx			; Restore error message.
+ 00000068  E8 00000000 E				call WriteString
+ 0000006D  E8 00000000 E				call	ReadChar       ; Input the charater.
+ 00000072  A2 00000000 E				mov dir, al
 							; call WriteChar		; Display direction choice.
- 00000081  52						push edx			; Save message in case of another iteration.
+ 00000077  52						push edx			; Save message in case of another iteration.
 						.ENDIF
 					.ENDW
- 00000082		   *@C0008:
- 00000082		   *@C0001:
- 00000082  0B DB	   *	    or	ebx, ebx
- 00000084  74 AD	   *	    je	@C0002
-
- 00000086  5A				pop edx
- 00000087  C3				ret
- 00000088			ValidateInput ENDP
+ 00000078		   *@C0008:
+ 00000078		   *@C0001:
+ 00000078  0B DB	   *	    or	ebx, ebx
+ 0000007A  74 AD	   *	    je	@C0002
+ 0000006E  E8 00000000 E	    call UpdateGrid
+ 0000007C  5A				pop edx
+ 0000007D  C3				ret
+ 0000007E			ValidateInput ENDP
 
 				;-----------------------------------------------------
- 00000088			UserPrompt PROC
+ 0000007E			UserPrompt PROC
 				;
 				; Handler for user input. Calls methods to receive, validate,
 				; and display user input.
 				; Receives: nothing
 				; Returns: dir is set to a valid choice
 				;-----------------------------------------------------
- 00000088  66| BA 0000			mov dx, 0
- 0000008C  E8 00000000 E		call Gotoxy		; reset cursor to origin
- 00000091  E8 FFFFFF6A			call InputTheDir
- 00000096  C3				ret 
- 00000097			UserPrompt ENDP
+					; Get user input and validate.
+ 0000007E  66| BA 0000			mov dx, 0
+ 00000082  E8 00000000 E		call Gotoxy
+ 00000087  E8 FFFFFF74			call InputTheDir
+					
+					; Clear the prompt.
+ 0000008C  66| BA 0000			mov dx, 0
+ 00000090  E8 00000000 E		call Gotoxy
+ 00000095  BA 0000004F R		mov edx, OFFSET clearPrompt
+ 0000009A  E8 00000000 E		call WriteString
 
+ 0000009F  C3				ret 
+ 000000A0			UserPrompt ENDP
+ 000000A5  BA 00000087 R	          mov edx, OFFSET loseMsg
 				END ; Notice that this is only END, not END main
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/24/21 17:11:56
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/23/21 13:28:14
 UserPrompt.asm						     Symbols 2 - 1
+ 000000AF  66| BA 0000		          mov dx, 0
+ 000000B3  B6 14		          mov dh, 20
+ 000000B5  E8 00000000 E	          call Gotoxy
+
+				          invoke ExitProcess,0
+ 000000BA  6A 00	   *	    push   +000000000h
+ 000000BC  E8 00000000 E   *	    call   ExitProcess
+ 000000C1			main ENDP
+				end main
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/22/21 01:07:47
+main.asm						     Symbols 2 - 1
 
 
 
@@ -228,8 +244,8 @@ SYSTEMTIME . . . . . . . . . . .	 00000010
   wHour  . . . . . . . . . . . .	 00000008	 Word
   wMinute  . . . . . . . . . . .	 0000000A	 Word
   wSecond  . . . . . . . . . . .	 0000000C	 Word
-  wMilliseconds  . . . . . . . .	 0000000E	 Word
-WINDOW_BUFFER_SIZE_RECORD  . . .	 00000004
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000082 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000000A0 Para	  Public  'CODE'	
   dwSize . . . . . . . . . . . .	 00000000	 DWord
 
 
@@ -239,8 +255,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 0000004F Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000097 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 000000A1 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000000C1 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -275,6 +291,7 @@ GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 GetMaxXY . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetMseconds  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputTheDir  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001C Private STDCALL
 GetProcessHeap . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -286,7 +303,6 @@ HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-InputTheDir  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000026 Private STDCALL
 IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -319,8 +335,8 @@ SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+UserPrompt . . . . . . . . . . .	P Near	 0000007E _TEXT	Length= 00000022 Public STDCALL
+ValidateInput  . . . . . . . . .	P Near	 0000001C _TEXT	Length= 00000062 Private STDCALL
 ShowFPUStack . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 StrLength  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -330,8 +346,8 @@ Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-UserPrompt . . . . . . . . . . .	P Near	 00000088 _TEXT	Length= 0000000F Public STDCALL
-ValidateInput  . . . . . . . . .	P Near	 00000026 _TEXT	Length= 00000062 Private STDCALL
+UpdateGrid . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+UserPrompt . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteBinB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteBin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -560,7 +576,7 @@ VK_RSHIFT  . . . . . . . . . . .	Number	 000000A1h
 VK_SCROLL  . . . . . . . . . . .	Number	 00000091h   
 VK_SEPARATER . . . . . . . . . .	Number	 0000006Ch   
 VK_SHIFT . . . . . . . . . . . .	Number	 00000010h   
-VK_SNAPSHOT  . . . . . . . . . .	Number	 0000002Ch   
+clearPrompt  . . . . . . . . . .	Byte	 0000004F _DATA	
 VK_SPACE . . . . . . . . . . . .	Number	 00000020h   
 VK_SUBTRACT  . . . . . . . . . .	Number	 0000006Dh   
 VK_TAB . . . . . . . . . . . . .	Number	 00000009h   
@@ -571,6 +587,7 @@ WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
+current_score  . . . . . . . . .	DWord	 0000007F _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
 dirPrompt  . . . . . . . . . . .	Byte	 00000000 _DATA	
 dir  . . . . . . . . . . . . . .	Byte	 00000000 FLAT	External STDCALL
@@ -590,5 +607,5 @@ white  . . . . . . . . . . . . .	Number	 0000000Fh
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
 
-	   1 Warnings
+	   0 Warnings
 	   0 Errors

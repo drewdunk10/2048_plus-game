@@ -15,16 +15,29 @@ grid_array DWORD 16 DUP(0), 0
 dh_pos BYTE 6, 8, 10, 12, 0
 dl_pos BYTE 1, 6, 11, 16, 0
 
-dir BYTE ?  ; Updated in UserPrompt
+; Values used for scoreboard
+dir BYTE ?               ; Set in UserPrompt
 target_score DWORD 6561
 current_score DWORD 0
 tile_count DWORD 0
 
+; Text for scoreboard
+score1 BYTE "Current Score: ", 0
+score2 BYTE "Target Score: ", 0
+score3 BYTE "Tile Count: ", 0
+score4 BYTE "Last Move: ", 0
+
 loseMsg	BYTE	"No moves left. Game over.", 0
+winMsg    BYTE "Target score reached. You win!", 0
 
 .code
-; Display the game board to user
-printGrid PROC
+;-----------------------------------------------------
+PrintGrid PROC
+;
+; Prints the empty game board in the console.
+; Receives: divider and block_row BYTE arrays
+; Returns: nothing
+;-----------------------------------------------------
      ;Gotoxy start position for board
      mov dh, 5
      mov dl, 0
@@ -56,47 +69,93 @@ printGrid PROC
           loop build_row
           ret
 
-printGrid ENDP
+PrintGrid ENDP
+
+
+;-----------------------------------------------------
+UpdateScoreBoard PROC
+;
+; Re-displays each of the game variables on the console.
+; Receives: values of current_score, target_score, 
+; tile_count, and dir.
+; Returns: nothing
+;-----------------------------------------------------
+     mov dh, 16
+     mov dl, 0
+     call Gotoxy
+
+     mov eax, current_score
+     mov edx, OFFSET score1
+     call WriteString
+     call WriteDec
+     call Crlf
+
+     mov eax, target_score
+     mov edx, OFFSET score2
+     call WriteString
+     call WriteDec
+     call Crlf
+
+     mov eax, tile_count
+     mov edx, OFFSET score3
+     call WriteString
+     call WriteDec
+     call Crlf
+
+     movzx eax, dir
+     mov edx, OFFSET score4
+     call WriteString
+     call WriteChar
+     call Crlf
+
+     ret 
+UpdateScoreBoard ENDP
 
 
 main PROC PUBLIC
-    call Randomize ; set seed
+    call Randomize                 ; Set seed.
+    call PrintGrid                 ; Display empty board.
 
-    call printGrid
+    ; Initialize grid with two tiles. TODO: Allow user to set?
     call UpdateGrid
     call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
-    ;call UpdateGrid
+    call UpdateScoreBoard
 
-    ; Lose condition
-    .IF tile_count >= 16
-         jmp game_over
-    .ENDIF
+    ; Main game loop
+    .WHILE (tile_count < 16)
+          call UserPrompt          ; Prompts user for a direction to move.
+          ; call GridMove          ; Executes move and shifts tiles.
+          
+          ; Check win condition before adding a new tile.
+          mov eax, current_score
+          .IF (eax >= target_score)
+               jmp win
+          .ENDIF
 
-    call UserPrompt
+          call UpdateGrid          ; Adds a random tile after a user move.
+          call updateScoreBoard    ; Updates/Renders game variables on display.
+    .ENDW
 
-    call GridMove
-
-    game_over:
-          ; Reset cursor to origin for error message.
+    lose:
+          ; Move cursor above grid for lose message.
           mov dx, 0
+          mov dh, 4
           call Gotoxy
           mov edx, OFFSET loseMsg
           call WriteString
+          jmp _exit
 
-          ; Move cursor below grid before exit.
+     win:
+          ; Move cursor above grid for win message.
+          mov dx, 0
+          mov dh, 4
+          call Gotoxy
+          mov edx, OFFSET winMsg
+          call WriteString
+
+     ; Move cursor below grid before exit.
+     _exit:
+          call UpdateScoreBoard    ; Final update before exit.
           mov dx, 0
           mov dh, 20
           call Gotoxy
