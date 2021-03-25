@@ -75,7 +75,6 @@ LOCAL base:DWORD, start:DWORD
     
     loop lp
 
-
     ret
 slideUp ENDP
 

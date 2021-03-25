@@ -17,7 +17,7 @@ dl_pos BYTE 1, 6, 11, 16, 0
 
 ; Values used for scoreboard
 dir BYTE ?               ; Set in UserPrompt
-target_score DWORD 6561
+target_score DWORD 3072
 current_score DWORD 0
 tile_count DWORD 0
 
