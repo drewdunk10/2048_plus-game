@@ -1,11 +1,13 @@
 INCLUDE Irvine32.inc
 INCLUDE GridMove.inc
+INCLUDE UpdateGrid.inc
+
+MapToDisplay PROTO
 
 .data
 blank BYTE "    ", 0
 
 .code
-
 slideUp PROC
 LOCAL base:DWORD, start:DWORD
     ; Pointer to grid array.
@@ -43,6 +45,12 @@ LOCAL base:DWORD, start:DWORD
                 ; Combine tile to base pos tile.
                 add [esi + ebx], edx
                 mov DWORD PTR [esi + eax], 0
+
+                ; Decrement tile count and increase score
+                dec tile_count
+                add edx, edx
+                add current_score, edx
+
                 ; Make the block below base the new base.
                 add base, 16
             
@@ -78,7 +86,82 @@ LOCAL base:DWORD, start:DWORD
     ret
 slideUp ENDP
 
+
+;-----------------------------------------------------
+DisplayMove PROC
+;
+; Re-displays each index of grid_array on the console
+; after a move is performed.
+; Receives:
+;    - external: grid_array
+;    - global: blank
+; Returns: nothing
+;-----------------------------------------------------
+LOCAL index:DWORD
+     ; Prep esi to index each element of grid_array
+     mov esi, OFFSET grid_array
+
+     mov ecx, 0    
+     .WHILE (ecx <= 60)  ; 15 * 4 = 60 (last index in grid_array)
+          ; store current idx in index local
+          mov index, ecx
+          mov ebx, ecx
+
+          ; -----------------------------------------------------
+          ;call MapToDisplay
+          mov eax, ebx
+          mov ebx, 16
+          div bl                       ; div by 16 to get row num.
+          movzx ecx, al                ; quotient now holds row num
+          mov dh, [dh_pos + ecx]
+
+          ; Shift ah (remainder) into al to be used for finding column num
+          shr ax, 8
+
+          ; Calculate dl value for console
+          mov ebx, 4
+          div bl                       ; divide remainder by 4 to find col num
+          xor ah, ah                   ; clear remainder to get quotient
+          mov dl, [dl_pos + eax]
+          ; -----------------------------------------------------
+      
+          ; Save and move to console position for current tile.
+          push edx
+          call Gotoxy
+
+          ; Clear out tile on display.
+          mov edx, OFFSET blank
+          call WriteString
+
+          ; Restore value of index in ecx.
+          mov ecx, index
+          .IF (DWORD PTR [esi + ecx] != 0)
+               ; Restore position after displaying a blank.
+               pop edx
+               call Gotoxy
+
+               ; Display num contained at index in grid array.
+               mov eax, [esi + ecx]
+               call WriteDec
+          .ENDIF
+
+          ; Move to next index in grid_array.
+          add ecx, 4
+     .ENDW
+
+     ret
+DisplayMove ENDP
+
+
+;-----------------------------------------------------
 GridMove PROC
+;
+; Handler for player moves. Performs a "slide" for tiles
+; in a specified direction for the grid_array and console
+; Receives: dir to determine direction of slide
+; Returns: Updated tile_count and current_score via a "slide"
+; call
+;-----------------------------------------------------
     .IF dir == 'W'
         call slideUp
         jmp _endif
@@ -97,7 +180,7 @@ GridMove PROC
     .ENDIF
 
 _endif:
-    
-    invoke ExitProcess,0
+    call DisplayMove
+    ret
 GridMove ENDP
 end

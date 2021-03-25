@@ -1,6 +1,8 @@
 INCLUDE Irvine32.Inc
 INCLUDE UpdateGrid.inc
 
+MapToDisplay PROTO
+
 .data
 ; "random" tiles generated after each move
 tile_choice BYTE 3, 6, 0
@@ -63,6 +65,8 @@ LOCAL randRow:BYTE, randCol:BYTE
           push eax                     ; save number to display
           
           ; Calculate dh value for console
+
+          ;call MapToDisplay ---------------------------------------
           mov eax, ebx
           mov ebx, 16
           div bl                       ; div by 16 to get row num.
@@ -77,11 +81,22 @@ LOCAL randRow:BYTE, randCol:BYTE
           div bl                       ; divide remainder by 4 to find col num
           xor ah, ah                   ; clear remainder to get quotient
           mov dl, [dl_pos + eax]
+          ; ------------------------------------------------------
 
           call Gotoxy                  ; set height and width to write number
+
+          ; Set text color to red
+          mov eax, 0
+          mov eax, red +(black*16)
+          call setTextColor
+
           pop eax                      ; restore number to display
           call WriteDec                ; display to console
 
+          ; Reset background/text color
+          mov eax, 0
+          mov eax, white +(black*16)
+          call setTextColor
      ret
 AddNewTile ENDP
 
@@ -115,6 +130,33 @@ LinearProbe PROC
      ; return index to place new tile.
      ret
 LinearProbe ENDP
+
+
+;-----------------------------------------------------
+MapToDisplay PROC
+;
+; Sets the the dh and dl corresponding to an index in grid_array
+; Receives: index of grid_array contained in ebx
+; Returns: nothing
+;-----------------------------------------------------
+     ; Calculate dh value for console
+     xor eax, eax
+     mov eax, ebx
+     mov ebx, 16
+     div bl                       ; div by 16 to get row num.
+     movzx ecx, al                ; quotient now holds row num
+     mov dh, [dh_pos + ecx]
+
+     ; Shift ah (remainder) into al to be used for finding column num
+     shr ax, 8
+
+     ; Calculate dl value for console
+     mov ebx, 4
+     div bl                       ; divide remainder by 4 to find col num
+     xor ah, ah                   ; clear remainder to get quotient
+     mov dl, [dl_pos + eax]
+     ret
+MapToDisplay ENDP
 
 
 ;-----------------------------------------------------
