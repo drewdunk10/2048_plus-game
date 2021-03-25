@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "6561_game", "6561_game.vcxproj", "{6B0A61A2-1BAB-4875-98F5-3AB4CDF51EE6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "temp_files", "temp_files", "{CC1E94E1-7D7B-4408-917F-535EA05752E6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3072_game", "3072_game.vcxproj", "{6B0A61A2-1BAB-4875-98F5-3AB4CDF51EE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,6 +20,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {7A2491A2-DE4B-4E08-9A17-59A84B7C90E1}
+		SolutionGuid = {B4A967E0-95B8-40DD-B517-32837DB4613F}
 	EndGlobalSection
 EndGlobal
