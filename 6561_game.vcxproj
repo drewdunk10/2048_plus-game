@@ -11,11 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <MASM Include="GridMove.asm" />
     <MASM Include="main.asm" />
     <MASM Include="UpdateGrid.asm" />
     <MASM Include="UserPrompt.asm" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="GridMove.inc" />
     <None Include="UpdateGrid.inc" />
     <None Include="UserPrompt.inc" />
   </ItemGroup>

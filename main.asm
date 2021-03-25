@@ -1,6 +1,7 @@
 INCLUDE Irvine32.Inc
 INCLUDE UserPrompt.inc  ; also needs header file to recognize UserPrompt call
 INCLUDE UpdateGrid.inc
+INCLUDE GridMove.inc    ; sliding tiles
 
 .data
 ; Use these rows to construct the grid.
@@ -64,21 +65,20 @@ main PROC PUBLIC
     call printGrid
     call UpdateGrid
     call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-    call UpdateGrid
-
-    call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
+    ;call UpdateGrid
 
     ; Lose condition
     .IF tile_count >= 16
@@ -86,6 +86,8 @@ main PROC PUBLIC
     .ENDIF
 
     call UserPrompt
+
+    call GridMove
 
     game_over:
           ; Reset cursor to origin for error message.
