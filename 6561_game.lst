@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/23/21 13:28:14
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/25/21 01:45:08
 UserPrompt.asm						     Page 1 - 1
 
 
@@ -122,7 +122,7 @@ UserPrompt.asm						     Page 1 - 1
  00000078		   *@C0001:
  00000078  0B DB	   *	    or	ebx, ebx
  0000007A  74 AD	   *	    je	@C0002
- 0000006E  E8 00000000 E	    call UpdateGrid
+
  0000007C  5A				pop edx
  0000007D  C3				ret
  0000007E			ValidateInput ENDP
@@ -148,21 +148,10 @@ UserPrompt.asm						     Page 1 - 1
 
  0000009F  C3				ret 
  000000A0			UserPrompt ENDP
- 000000A5  BA 00000087 R	          mov edx, OFFSET loseMsg
-				END ; Notice that this is only END, not END main
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/23/21 13:28:14
-UserPrompt.asm						     Symbols 2 - 1
- 000000AF  66| BA 0000		          mov dx, 0
- 000000B3  B6 14		          mov dh, 20
- 000000B5  E8 00000000 E	          call Gotoxy
 
-				          invoke ExitProcess,0
- 000000BA  6A 00	   *	    push   +000000000h
- 000000BC  E8 00000000 E   *	    call   ExitProcess
- 000000C1			main ENDP
-				end main
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/22/21 01:07:47
-main.asm						     Symbols 2 - 1
+				END ; Notice that this is only END, not END main
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/25/21 01:45:08
+UserPrompt.asm						     Symbols 2 - 1
 
 
 
@@ -244,8 +233,8 @@ SYSTEMTIME . . . . . . . . . . .	 00000010
   wHour  . . . . . . . . . . . .	 00000008	 Word
   wMinute  . . . . . . . . . . .	 0000000A	 Word
   wSecond  . . . . . . . . . . .	 0000000C	 Word
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000082 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 000000A0 Para	  Public  'CODE'	
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+WINDOW_BUFFER_SIZE_RECORD  . . .	 00000004
   dwSize . . . . . . . . . . . .	 00000000	 DWord
 
 
@@ -255,8 +244,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 000000A1 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 000000C1 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000082 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000000A0 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -291,7 +280,6 @@ GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 GetMaxXY . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetMseconds  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-InputTheDir  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001C Private STDCALL
 GetProcessHeap . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -303,6 +291,7 @@ HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputTheDir  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001C Private STDCALL
 IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -335,8 +324,8 @@ SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-UserPrompt . . . . . . . . . . .	P Near	 0000007E _TEXT	Length= 00000022 Public STDCALL
-ValidateInput  . . . . . . . . .	P Near	 0000001C _TEXT	Length= 00000062 Private STDCALL
+SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ShowFPUStack . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 StrLength  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -346,8 +335,8 @@ Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-UpdateGrid . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-UserPrompt . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+UserPrompt . . . . . . . . . . .	P Near	 0000007E _TEXT	Length= 00000022 Public STDCALL
+ValidateInput  . . . . . . . . .	P Near	 0000001C _TEXT	Length= 00000062 Private STDCALL
 WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteBinB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteBin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -576,7 +565,7 @@ VK_RSHIFT  . . . . . . . . . . .	Number	 000000A1h
 VK_SCROLL  . . . . . . . . . . .	Number	 00000091h   
 VK_SEPARATER . . . . . . . . . .	Number	 0000006Ch   
 VK_SHIFT . . . . . . . . . . . .	Number	 00000010h   
-clearPrompt  . . . . . . . . . .	Byte	 0000004F _DATA	
+VK_SNAPSHOT  . . . . . . . . . .	Number	 0000002Ch   
 VK_SPACE . . . . . . . . . . . .	Number	 00000020h   
 VK_SUBTRACT  . . . . . . . . . .	Number	 0000006Dh   
 VK_TAB . . . . . . . . . . . . .	Number	 00000009h   
@@ -587,7 +576,7 @@ WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
-current_score  . . . . . . . . .	DWord	 0000007F _DATA	
+clearPrompt  . . . . . . . . . .	Byte	 0000004F _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
 dirPrompt  . . . . . . . . . . .	Byte	 00000000 _DATA	
 dir  . . . . . . . . . . . . . .	Byte	 00000000 FLAT	External STDCALL

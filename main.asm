@@ -124,7 +124,7 @@ main PROC PUBLIC
     ; Main game loop
     .WHILE (tile_count < 16)
           call UserPrompt          ; Prompts user for a direction to move.
-          ; call GridMove          ; Executes move and shifts tiles.
+          call GridMove          ; Executes move and shifts tiles.
           
           ; Check win condition before adding a new tile.
           mov eax, current_score
@@ -133,7 +133,7 @@ main PROC PUBLIC
           .ENDIF
 
           call UpdateGrid          ; Adds a random tile after a user move.
-          call updateScoreBoard    ; Updates/Renders game variables on display.
+          call UpdateScoreBoard    ; Updates/Renders game variables on display.
     .ENDW
 
     lose:
