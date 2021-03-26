@@ -29,6 +29,7 @@ LOCAL randRow:BYTE, randCol:BYTE
 
      ; Get random index for dl_pos and set to one of the lengths
      mov eax, 4
+     mov eax, 4
      call RandomRange
 
      ; Multiply by 4 since WORD array
