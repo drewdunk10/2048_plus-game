@@ -17,18 +17,19 @@ dl_pos BYTE 1, 6, 11, 16, 0
 
 ; Values used for scoreboard
 dir BYTE ?               ; Set in UserPrompt
-target_score DWORD 3072
+target_tile DWORD 3072
+current_max DWORD 0
 current_score DWORD 0
 tile_count DWORD 0
 
 ; Text for scoreboard
 score1 BYTE "Current Score: ", 0
-score2 BYTE "Target Score: ", 0
+score2 BYTE "Target Tile: ", 0
 score3 BYTE "Tile Count: ", 0
 score4 BYTE "Last Move: ", 0
 
-loseMsg	BYTE	"No moves left. Game over.", 0
-winMsg    BYTE "Target score reached. You win!", 0
+loseMsg	BYTE	"No moves left. Game over. Your biggest tile: ", 0
+winMsg    BYTE "3072 tile reached. You win!", 0
 
 .code
 ;-----------------------------------------------------
@@ -90,7 +91,7 @@ UpdateScoreBoard PROC
      call WriteDec
      call Crlf
 
-     mov eax, target_score
+     mov eax, target_tile
      mov edx, OFFSET score2
      call WriteString
      call WriteDec
@@ -127,8 +128,8 @@ main PROC PUBLIC
           call GridMove          ; Executes move and shifts tiles.
           
           ; Check win condition before adding a new tile.
-          mov eax, current_score
-          .IF (eax >= target_score)
+          mov eax, current_max
+          .IF (eax >= target_tile)
                jmp win
           .ENDIF
 
@@ -143,6 +144,8 @@ main PROC PUBLIC
           call Gotoxy
           mov edx, OFFSET loseMsg
           call WriteString
+          mov eax, current_max
+          call WriteDec
           jmp _exit
 
      win:

@@ -47,9 +47,8 @@ LOCAL base:DWORD, start:DWORD
                 mov DWORD PTR [esi + eax], 0
 
                 ; Decrement tile count and increase score
-                dec tile_count
-                add edx, edx
-                add current_score, edx
+                jmp updt_scr
+              back:
 
                 ; Make the block below base the new base.
                 add base, 16
@@ -84,6 +83,14 @@ LOCAL base:DWORD, start:DWORD
     loop lp
 
     ret
+  updt_scr:
+    dec tile_count
+    add edx, edx
+    .IF(edx > current_max)
+          mov current_max, edx
+    .ENDIF
+    add current_score, edx
+    jmp back
 slideUp ENDP
 
 slideDown PROC
@@ -167,6 +174,9 @@ LOCAL base:DWORD, start:DWORD
   updt_scr:
     dec tile_count
     add edx, edx
+    .IF(edx > current_max)
+          mov current_max, edx
+    .ENDIF
     add current_score, edx
     jmp back
 slideDown ENDP
@@ -249,6 +259,9 @@ LOCAL base:DWORD, start:DWORD
   updt_scr:
     dec tile_count
     add edx, edx
+    .IF(edx > current_max)
+          mov current_max, edx
+    .ENDIF
     add current_score, edx
     jmp back
 slideLeft ENDP
@@ -334,6 +347,9 @@ LOCAL base:DWORD, start:DWORD
   updt_scr:
     dec tile_count
     add edx, edx
+    .IF(edx > current_max)
+          mov current_max, edx
+    .ENDIF
     add current_score, edx
     jmp back
 slideRight ENDP
