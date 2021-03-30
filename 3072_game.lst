@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/25/21 23:58:38
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/29/21 23:55:36
 UserPrompt.asm						     Page 1 - 1
 
 
@@ -31,19 +31,19 @@ UserPrompt.asm						     Page 1 - 1
 			      C 
 
  00000000			.data
- 00000000 45 6E 74 65 72	dirPrompt	BYTE "Enter the direction (ASWD): ", 0
+ 00000000 45 6E 74 65 72	dirPrompt	BYTE "Enter the direction (WASD): ", 0
 	   20 74 68 65 20
 	   64 69 72 65 63
 	   74 69 6F 6E 20
-	   28 41 53 57 44
+	   28 57 41 53 44
 	   29 3A 20 00
- 0000001D 49 6E 76 61 6C	errorMsg	BYTE	"Invalid Move, must be of one of ASWD. Try again: ", 0
+ 0000001D 49 6E 76 61 6C	errorMsg	BYTE	"Invalid Move, must be of one of WASD. Try again: ", 0
 	   69 64 20 4D 6F
 	   76 65 2C 20 6D
 	   75 73 74 20 62
 	   65 20 6F 66 20
 	   6F 6E 65 20 6F
-	   66 20 41 53 57
+	   66 20 57 41 53
 	   44 2E 20 54 72
 	   79 20 61 67 61
 	   69 6E 3A 20 00
@@ -150,7 +150,7 @@ UserPrompt.asm						     Page 1 - 1
  000000A0			UserPrompt ENDP
 
 				END ; Notice that this is only END, not END main
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/25/21 23:58:38
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    03/29/21 23:55:36
 UserPrompt.asm						     Symbols 2 - 1
 
 

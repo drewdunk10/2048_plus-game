@@ -28,7 +28,7 @@ score2 BYTE "Target Tile: ", 0
 score3 BYTE "Tile Count: ", 0
 score4 BYTE "Last Move: ", 0
 
-loseMsg	BYTE	"No moves left. Game over. Your biggest tile: ", 0
+loseMsg	BYTE	"All tiles full. Game over. Your biggest tile: ", 0
 winMsg    BYTE "3072 tile reached. You win!", 0
 
 .code

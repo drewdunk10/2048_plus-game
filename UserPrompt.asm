@@ -2,8 +2,8 @@ INCLUDE Irvine32.Inc
 INCLUDE UserPrompt.inc
 
 .data
-dirPrompt	BYTE "Enter the direction (ASWD): ", 0
-errorMsg	BYTE	"Invalid Move, must be of one of ASWD. Try again: ", 0
+dirPrompt	BYTE "Enter the direction (WASD): ", 0
+errorMsg	BYTE	"Invalid Move, must be of one of WASD. Try again: ", 0
 clearPrompt BYTE 50 DUP(" "), 0
 
 .code

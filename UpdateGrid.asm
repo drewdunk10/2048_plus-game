@@ -65,26 +65,8 @@ LOCAL randRow:BYTE, randCol:BYTE
           mov [esi + ebx], eax         ; Store num in grid_array
           push eax                     ; save number to display
           
-          ; Calculate dh value for console
-
-          ;call MapToDisplay ---------------------------------------
-          mov eax, ebx
-          mov ebx, 16
-          div bl                       ; div by 16 to get row num.
-          movzx ecx, al                ; quotient now holds row num
-          mov dh, [dh_pos + ecx]
-
-          ; Shift ah (remainder) into al to be used for finding column num
-          shr ax, 8
-
-          ; Calculate dl value for console
-          mov ebx, 4
-          div bl                       ; divide remainder by 4 to find col num
-          xor ah, ah                   ; clear remainder to get quotient
-          mov dl, [dl_pos + eax]
-          ; ------------------------------------------------------
-
-          call Gotoxy                  ; set height and width to write number
+          ; Move to corresponding display position in console.
+          call MapToDisplay
 
           ; Set text color to red
           mov eax, 0
@@ -156,6 +138,8 @@ MapToDisplay PROC
      div bl                       ; divide remainder by 4 to find col num
      xor ah, ah                   ; clear remainder to get quotient
      mov dl, [dl_pos + eax]
+
+     call Gotoxy                  ; set height and width to write number
      ret
 MapToDisplay ENDP
 
