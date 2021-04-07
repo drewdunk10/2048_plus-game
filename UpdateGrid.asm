@@ -4,8 +4,6 @@ INCLUDE UpdateGrid.inc
 MapToDisplay PROTO
 
 .data
-; "random" tiles generated after each move
-tile_choice BYTE 3, 6, 0
 index_count = 16  ; 16 DWORDS
 
 .code

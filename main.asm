@@ -28,8 +28,13 @@ score2 BYTE "Target Tile: ", 0
 score3 BYTE "Tile Count: ", 0
 score4 BYTE "Last Move: ", 0
 
-loseMsg	BYTE "No moves left. Game over. Your biggest tile: ", 0
-winMsg  BYTE "3072 tile reached. You win!", 0
+startMsg BYTE "Choose a multiple for the game (1-9): ", 0
+errMsg BYTE "Please enter a number 1-9: ", 0
+loseMsg BYTE "No moves left. Game over. Your biggest tile: ", 0
+winMsg  BYTE " tile reached. You win!", 0
+
+multiple BYTE 1
+tile_choice BYTE 1, 2, 0  ; "random" tiles generated after each move
 
 ; Flag to test for a valid move
 moveFlag BYTE 0
@@ -116,7 +121,7 @@ UpdateScoreBoard PROC
 UpdateScoreBoard ENDP
 
 ;-----------------------------------------------------
-CheckMoves PROC
+CheckMoves PROC USES ecx ebx
 ;
 ; Checks a filled grid of tiles for any possible moves
 ; remaining.
@@ -189,15 +194,47 @@ CheckMoves ENDP
 
 main PROC PUBLIC
     call Randomize                 ; Set seed.
+
+    ; Ask user to select a starting multiple
+    mov eax, 0
+    mov edx, OFFSET startMsg
+    call WriteString
+    read:  
+       call ReadDec
+       cmp eax, 9
+       jle valid
+
+       mov  edx, OFFSET errMsg
+       call WriteString
+       jmp  read
+
+    valid:
+       mov  multiple, al
+       call ClrScr
+
+    ; Calculate tile to win
+    mov bx, 1024
+    mul bx
+    mov target_tile, eax
+
+    ; Initialize tile choices
+    mov al, multiple
+    mov tile_choice[0], al
+    add al, al
+    mov tile_choice[1], al
+
     call PrintGrid                 ; Display empty board.
 
-    ; Initialize grid with two tiles. TODO: Allow user to set?
+    ; Initialize grid with two tiles.
     call UpdateGrid
     call UpdateGrid
     call UpdateScoreBoard
 
     ; Main game loop
-    .WHILE (current_max < 3072)
+    mov eax, target_tile
+    .WHILE (current_max < eax)
+          push eax
+
           prompt:
           call UserPrompt         ; Prompts user for a direction to move.
           call GridMove           ; Executes move and shifts tiles.
@@ -213,6 +250,7 @@ main PROC PUBLIC
           call UpdateGrid          ; Adds a random tile after a user move.
           call UpdateScoreBoard    ; Updates/Renders game variables on display.
 
+          pop eax
           .IF (tile_count >= 16)
                 call CheckMoves
                 cmp eax, 0
@@ -226,6 +264,8 @@ main PROC PUBLIC
           mov dx, 0
           mov dh, 4
           call Gotoxy
+          mov eax, target_tile
+          call WriteDec
           mov edx, OFFSET winMsg
           call WriteString
           jmp _exit
