@@ -128,12 +128,12 @@ main PROC PUBLIC
     ; Main game loop
     .WHILE (tile_count < 16)
           prompt:
-          call UserPrompt          ; Prompts user for a direction to move.
-          call GridMove          ; Executes move and shifts tiles.
+          call UserPrompt         ; Prompts user for a direction to move.
+          call GridMove           ; Executes move and shifts tiles.
 
           ; Check valid move flag
-          cmp moveFlag, 0           ; Check if no moves happened
-          je prompt               ; Do not count this move... ask user for input again
+          cmp moveFlag, 0         ; Check if no slides happened
+          je prompt               ; If no tiles slid, ask user for input again
           mov moveFlag, 0
           
           ; Check win condition before adding a new tile.
