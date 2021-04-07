@@ -212,6 +212,7 @@ LOCAL base:DWORD, start:DWORD
         mov eax, start
         mov ebx, base
         .IF(DWORD PTR [esi + eax] > 0)
+             inc moveFlag
              mov edx, [esi + eax]
              ; If base and start tiles are equal.
             .IF([esi + ebx] == edx)
@@ -219,11 +220,11 @@ LOCAL base:DWORD, start:DWORD
                 add [esi + ebx], edx
                 mov DWORD PTR [esi + eax], 0
 
-                ; Decrement tile count and increase score
-                jmp updt_scr
-              back:
                 ; Make the block right of base the new base.
                 add base, 4
+
+                ; Decrement tile count and increase score
+                jmp updt_scr
             
              ; If base is empty spot.
             .ELSEIF(DWORD PTR [esi + ebx] == 0)
@@ -232,15 +233,18 @@ LOCAL base:DWORD, start:DWORD
                 mov DWORD PTR [esi + eax], 0
              
             .ELSE
-                ; Move tile to pos right base.
-                mov DWORD PTR [esi + eax], 0
-                mov [esi + ebx + 4], edx
-              
                 ; Make the block right of base the new base.
                 add base, 4
-            .ENDIF
 
+                cmp base, eax
+
+                ; Move tile to pos right base.
+                jne move_before
+
+                dec moveFlag
+            .ENDIF
         .ENDIF
+        back:
         ; Get end index.
         pop edx
 
@@ -257,13 +261,17 @@ LOCAL base:DWORD, start:DWORD
 
     ret
   updt_scr:
-    dec tile_count
-    add edx, edx
-    .IF(edx > current_max)
+     dec tile_count
+     add edx, edx
+     .IF(edx > current_max)
           mov current_max, edx
-    .ENDIF
-    add current_score, edx
-    jmp back
+     .ENDIF
+     add current_score, edx
+     jmp back
+  move_before:
+     mov DWORD PTR [esi + eax], 0
+     mov [esi + ebx + 4], edx
+     jmp back
 slideLeft ENDP
 
 slideRight PROC
