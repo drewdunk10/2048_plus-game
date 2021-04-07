@@ -388,6 +388,45 @@ LOCAL base:DWORD, start:DWORD
 slideRight ENDP
 
 ;-----------------------------------------------------
+SetColor PROC USES eax ebx ecx
+;
+; Takes value of tile and sets text to the appropriate
+; color that corresponds to that tile.
+; Receives: value of tile in EAX.
+; Returns: nothing
+;-----------------------------------------------------
+    mov ecx, 0      ; Track number of divisions.
+
+    ; Initial division by base multiple.
+    mov bl, 3
+    div bl
+
+    ; Future divisions will be by 2.
+    mov bl, 2
+    .WHILE (al > 1)
+        ; Clear remainder to only use quotient.
+        xor ah, ah
+        div bl
+
+        inc ecx
+    .ENDW
+
+    ; Mod by 15 to use all available colors.
+    mov eax, ecx
+    mov bl, 15      ; Mod by 16 to check if first element in row.
+    div bl                ; If it is the first element don't check left.
+
+    ; Remainder is stored in ah, which is the color to use.
+    shr ax, 8
+    inc al
+    xor ah, ah
+
+    call setTextColor
+
+    ret
+SetColor ENDP
+
+;-----------------------------------------------------
 DisplayMove PROC
 ;
 ; Re-displays each index of grid_array on the console
@@ -425,6 +464,11 @@ LOCAL index:DWORD
           .IF (DWORD PTR [esi + ecx] != 0)
                ; Restore position after displaying a blank.
                call Gotoxy
+
+               ; TODO
+               ; GET AND SET COLOR
+               mov eax, DWORD PTR [esi + ecx]
+               call SetColor
 
                ; Display num contained at index in grid array.
                mov eax, [esi + ecx]
