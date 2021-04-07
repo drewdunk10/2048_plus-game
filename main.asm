@@ -121,7 +121,7 @@ UpdateScoreBoard PROC
 UpdateScoreBoard ENDP
 
 ;-----------------------------------------------------
-CheckMoves PROC USES ecx ebx
+CheckMoves PROC USES ecx ebx eax
 ;
 ; Checks a filled grid of tiles for any possible moves
 ; remaining.

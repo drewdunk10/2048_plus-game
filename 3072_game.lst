@@ -1,5 +1,6 @@
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/07/21 02:29:26
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/07/21 03:03:31
 UserPrompt.asm						     Page 1 - 1
+
 
 				INCLUDE Irvine32.Inc
 			      C ; Include file for Irvine32.lib             (Irvine32.inc)
@@ -19,7 +20,7 @@ UserPrompt.asm						     Page 1 - 1
 			      C .NOLIST
 			      C .LIST
 			      C 
-				INCLUDE UserPrompt.inc  ; also needs header file to recognize UserPrompt call
+				INCLUDE UserPrompt.inc
 			      C ExitProcess PROTO, dwExitCode:DWORD
 			      C 
 			      C UserPrompt PROTO    ; Allows for more control over stack parameters
@@ -28,382 +29,128 @@ UserPrompt.asm						     Page 1 - 1
 			      C OPTION PROC:PRIVATE ; Make it so only project files can use this module
 			      C 
 			      C 
-				INCLUDE UpdateGrid.inc
-			      C ExitProcess PROTO, dwExitCode:DWORD
-			      C 
-			      C UpdateGrid PROTO    ; Allows for more control over stack parameters
-			      C EXTERNDEF grid_array:DWORD, tile_count:DWORD, dh_pos:BYTE , dl_pos:BYTE, tile_choice:BYTE
-			      C 
-			      C OPTION PROC:PRIVATE ; Make it so only project files can use this module
-			      C 
-				INCLUDE GridMove.inc    ; sliding tiles
-			      C ExitProcess PROTO, dwExitCode:DWORD
-			      C 
-			      C MapToDisplay PROTO
-			      C 
-			      C GridMove PROTO
-			      C EXTERNDEF grid_array:DWORD, dh_pos:BYTE, dl_pos:BYTE, dir:BYTE, tile_count:DWORD, current_score:DWORD, current_max:DWORD, moveFlag:BYTE
-			      C 
-			      C OPTION PROC:PRIVATE
-			      C 
 
  00000000			.data
-				; Use these rows to construct the grid.
- 00000000  00000015 [		divider BYTE 21 DUP("-"), 0
-	    2D
-	   ] 00
- 00000016 7C 20 20 20 20	block_row BYTE "|    |    |    |    |", 0
-	   7C 20 20 20 20
-	   7C 20 20 20 20
-	   7C 20 20 20 20
-	   7C 00
-
-				; Array to hold values in game grid
- 0000002C  00000010 [		grid_array DWORD 16 DUP(0), 0
-	    00000000
-	   ] 00000000
-
-				; Number positions for display grid:
- 00000070 06 08 0A 0C 00	dh_pos BYTE 6, 8, 10, 12, 0
- 00000075 01 06 0B 10 00	dl_pos BYTE 1, 6, 11, 16, 0
-
-				; Values used for scoreboard
- 0000007A 00			dir BYTE ?               ; Set in UserPrompt
- 0000007B 00000C00		target_tile DWORD 3072
- 0000007F 00000000		current_max DWORD 0
- 00000083 00000000		current_score DWORD 0
- 00000087 00000000		tile_count DWORD 0
-
-				; Text for scoreboard
- 0000008B 43 75 72 72 65	score1 BYTE "Current Score: ", 0
-	   6E 74 20 53 63
-	   6F 72 65 3A 20
-	   00
- 0000009B 54 61 72 67 65	score2 BYTE "Target Tile: ", 0
-	   74 20 54 69 6C
-	   65 3A 20 00
- 000000A9 54 69 6C 65 20	score3 BYTE "Tile Count: ", 0
-	   43 6F 75 6E 74
-	   3A 20 00
- 000000B6 4C 61 73 74 20	score4 BYTE "Last Move: ", 0
-	   4D 6F 76 65 3A
-	   20 00
-
- 000000C2 43 68 6F 6F 73	startMsg BYTE "Choose a multiple for the game (1-9): ", 0
-	   65 20 61 20 6D
-	   75 6C 74 69 70
-	   6C 65 20 66 6F
-	   72 20 74 68 65
-	   20 67 61 6D 65
-	   20 28 31 2D 39
+ 00000000 45 6E 74 65 72	dirPrompt	BYTE "Enter the direction (WASD): ", 0
+	   20 74 68 65 20
+	   64 69 72 65 63
+	   74 69 6F 6E 20
+	   28 57 41 53 44
 	   29 3A 20 00
- 000000E9 50 6C 65 61 73	errMsg BYTE "Please enter a number 1-9: ", 0
-	   65 20 65 6E 74
-	   65 72 20 61 20
-	   6E 75 6D 62 65
-	   72 20 31 2D 39
-	   3A 20 00
- 00000105 4E 6F 20 6D 6F	loseMsg BYTE "No moves left. Game over. Your biggest tile: ", 0
-	   76 65 73 20 6C
-	   65 66 74 2E 20
-	   47 61 6D 65 20
-	   6F 76 65 72 2E
-	   20 59 6F 75 72
-	   20 62 69 67 67
-	   65 73 74 20 74
-	   69 6C 65 3A 20
-	   00
- 00000133 20 74 69 6C 65	winMsg  BYTE " tile reached. You win!", 0
-	   20 72 65 61 63
-	   68 65 64 2E 20
-	   59 6F 75 20 77
-	   69 6E 21 00
-
- 0000014B 01			multiple BYTE 1
- 0000014C 01 02 00		tile_choice BYTE 1, 2, 0  ; "random" tiles generated after each move
-
-				; Flag to test for a valid move
- 0000014F 00			moveFlag BYTE 0
+ 0000001D 49 6E 76 61 6C	errorMsg	BYTE	"Invalid Move, must be of one of WASD. Try again: ", 0
+	   69 64 20 4D 6F
+	   76 65 2C 20 6D
+	   75 73 74 20 62
+	   65 20 6F 66 20
+	   6F 6E 65 20 6F
+	   66 20 57 41 53
+	   44 2E 20 54 72
+	   79 20 61 67 61
+	   69 6E 3A 20 00
+ 0000004F  00000032 [		clearPrompt BYTE 50 DUP(" "), 0
+	    20
+	   ] 00
 
  00000000			.code
 				;-----------------------------------------------------
- 00000000			PrintGrid PROC
+ 00000000			InputTheDir PROC
 				;
-				; Prints the empty game board in the console.
-				; Receives: divider and block_row BYTE arrays
+				; Prompts user for a direction. Saves the char in dir (if valid).
+				; Receives: nothing
+				; Returns: sets dir in main
+				;-----------------------------------------------------
+ 00000000  60				pushad
+ 00000001  BA 00000000 R		mov edx, OFFSET dirPrompt; display a prompt
+ 00000006  E8 00000000 E		call	WriteString
+ 0000000B  E8 00000000 E		call	ReadChar         	; Input the charater.
+					; call WriteChar			; Display direction choice.
+ 00000010  A2 00000000 E		mov dir, al			; Save the direction in dir.
+ 00000015  E8 00000002			call ValidateInput		; Continue prompt until valid input.
+ 0000001A  61				popad
+ 0000001B  C3				ret
+ 0000001C			InputTheDir ENDP
+
+				;-----------------------------------------------------
+ 0000001C			ValidateInput PROC
+				;
+				; Compares input with one of the direction choices. If invalid,
+				; prompt user for another character until valid.
+				; Receives: dir points to initial direction choice.
 				; Returns: nothing
 				;-----------------------------------------------------
-				     ;Gotoxy start position for board
- 00000000  B6 05		     mov dh, 5
- 00000002  B2 00		     mov dl, 0
- 00000004  B9 00000009		     mov ecx, 9
- 00000009  B3 02		     mov bl, 2
+ 0000001C  BA 0000001D R		mov edx, OFFSET errorMsg
+ 00000021  52				push edx
 
- 0000000B			     build_row:
-				          ; Move to next row.
- 0000000B  E8 00000000 E	          call Gotoxy
- 00000010  FE C6		          inc dh   ; move start row for next loop
- 00000012  52			          push edx ; save value since WriteString also uses edx
+					; compare character with valid choices
+ 00000022  BB 00000000			mov ebx, 0
+					.WHILE ebx == 0
+ 00000027  EB 4F	   *	    jmp    @C0001
+ 00000029		   *@C0002:
+						INVOKE Str_ucase, ADDR dir
+ 00000029  68 00000000 E   *	    push   OFFSET dir
+ 0000002E  E8 00000000 E   *	    call   Str_ucase
+						.IF dir == 'A' || dir == 'S' || dir == 'D' || dir == 'W'
+ 00000033  80 3D 00000000 E
+	   41		   *	    cmp    dir, 'A'
+ 0000003A  74 1B	   *	    je	@C0004
+ 0000003C  80 3D 00000000 E
+	   53		   *	    cmp    dir, 'S'
+ 00000043  74 12	   *	    je	@C0004
+ 00000045  80 3D 00000000 E
+	   44		   *	    cmp    dir, 'D'
+ 0000004C  74 09	   *	    je	@C0004
+ 0000004E  80 3D 00000000 E
+	   57		   *	    cmp    dir, 'W'
+ 00000055  75 07	   *	    jne    @C0003
+ 00000057		   *@C0004:
+ 00000057  BB 00000001					mov ebx, 1
+						.ELSE
+ 0000005C  EB 1A	   *	    jmp    @C0008
+ 0000005E		   *@C0003:
+ 0000005E  66| BA 0000					mov dx, 0
+ 00000062  E8 00000000 E				call Gotoxy
 
-				          ; mov counter value for modulus.
- 00000013  66| 8B C1		          mov ax, cx
- 00000016  F6 F3		          div bl
+ 00000067  5A						pop edx			; Restore error message.
+ 00000068  E8 00000000 E				call WriteString
+ 0000006D  E8 00000000 E				call	ReadChar       ; Input the charater.
+ 00000072  A2 00000000 E				mov dir, al
+							; call WriteChar		; Display direction choice.
+ 00000077  52						push edx			; Save message in case of another iteration.
+						.ENDIF
+					.ENDW
+ 00000078		   *@C0008:
+ 00000078		   *@C0001:
+ 00000078  0B DB	   *	    or	ebx, ebx
+ 0000007A  74 AD	   *	    je	@C0002
 
-				          ; Check remainder for even or odd row.
-				          .IF(ah == 1)
- 00000018  80 FC 01	   *	    cmp    ah, 001h
- 0000001B  75 07	   *	    jne    @C0001
- 0000001D  BA 00000000 R	               mov edx, OFFSET divider
-				          .ELSE
- 00000022  EB 05	   *	    jmp    @C0003
- 00000024		   *@C0001:
- 00000024  BA 00000016 R	               mov edx, OFFSET block_row
-				          .ENDIF
- 00000029		   *@C0003:
-				          
-				          ; Write the row to the console.
- 00000029  E8 00000000 E	          call WriteString
- 0000002E  5A			          pop edx  ; restore next row position.
-
-				          ; Loop to next row.
- 0000002F  E2 DA		          loop build_row
- 00000031  C3			          ret
-
- 00000032			PrintGrid ENDP
-
+ 0000007C  5A				pop edx
+ 0000007D  C3				ret
+ 0000007E			ValidateInput ENDP
 
 				;-----------------------------------------------------
- 00000032			UpdateScoreBoard PROC
+ 0000007E			UserPrompt PROC
 				;
-				; Re-displays each of the game variables on the console.
-				; Receives: values of current_score, target_score, 
-				; tile_count, and dir.
-				; Returns: nothing
+				; Handler for user input. Calls methods to receive, validate,
+				; and display user input.
+				; Receives: nothing
+				; Returns: dir is set to a valid choice
 				;-----------------------------------------------------
- 00000032  B6 10		     mov dh, 16
- 00000034  B2 00		     mov dl, 0
- 00000036  E8 00000000 E	     call Gotoxy
+					; Get user input and validate.
+ 0000007E  66| BA 0000			mov dx, 0
+ 00000082  E8 00000000 E		call Gotoxy
+ 00000087  E8 FFFFFF74			call InputTheDir
+					
+					; Clear the prompt.
+ 0000008C  66| BA 0000			mov dx, 0
+ 00000090  E8 00000000 E		call Gotoxy
+ 00000095  BA 0000004F R		mov edx, OFFSET clearPrompt
+ 0000009A  E8 00000000 E		call WriteString
 
- 0000003B  A1 00000083 R	     mov eax, current_score
- 00000040  BA 0000008B R	     mov edx, OFFSET score1
- 00000045  E8 00000000 E	     call WriteString
- 0000004A  E8 00000000 E	     call WriteDec
- 0000004F  E8 00000000 E	     call Crlf
-
- 00000054  A1 0000007B R	     mov eax, target_tile
- 00000059  BA 0000009B R	     mov edx, OFFSET score2
- 0000005E  E8 00000000 E	     call WriteString
- 00000063  E8 00000000 E	     call WriteDec
- 00000068  E8 00000000 E	     call Crlf
-
- 0000006D  A1 00000087 R	     mov eax, tile_count
- 00000072  BA 000000A9 R	     mov edx, OFFSET score3
- 00000077  E8 00000000 E	     call WriteString
- 0000007C  E8 00000000 E	     call WriteDec
- 00000081  E8 00000000 E	     call Crlf
-
- 00000086  0F B6 05		     movzx eax, dir
-	   0000007A R
- 0000008D  BA 000000B6 R	     mov edx, OFFSET score4
- 00000092  E8 00000000 E	     call WriteString
- 00000097  E8 00000000 E	     call WriteChar
- 0000009C  E8 00000000 E	     call Crlf
-
- 000000A1  C3			     ret 
- 000000A2			UpdateScoreBoard ENDP
-
-				;-----------------------------------------------------
- 000000A2			CheckMoves PROC USES ecx ebx
-				;
-				; Checks a filled grid of tiles for any possible moves
-				; remaining.
-				; Returns: 0 if no moves remaining and 1 otherwise by
-				; storing it in EAX
-				;-----------------------------------------------------
-				LOCAL row_first:DWORD
- 000000A2  55		   *	    push   ebp
- 000000A3  8B EC	   *	    mov    ebp, esp
- 000000A5  83 C4 FC	   *	    add    esp, 0FFFFFFFCh
- 000000A8  51		   *	    push   ecx
- 000000A9  53		   *	    push   ebx
- 000000AA  BE 0000002C R	    mov esi, OFFSET grid_array      ; Pointer to game board grid array.
- 000000AF  B9 00000000		    mov ecx, 0                      ; Current index.
- 000000B4  C7 45 FC		    mov row_first, 0                ; Stores first index in row.
-	   00000000
-				    .WHILE (ecx <= 60)  ; 15 * 4 = 60 (last index in grid_array).
- 000000BB  EB 4A	   *	    jmp    @C0004
- 000000BD		   *@C0005:
-				        ; Get index of row first.
- 000000BD  66| 8B C1		        mov ax, cx
- 000000C0  B3 10		        mov bl, 16            ; Mod by 16 to check if first element in row.
- 000000C2  F6 F3		        div bl                ; If it is the first element don't check left.
-
-				         ; Remainder is stored in ah.
-				        .IF ah == 0
- 000000C4  0A E4	   *	    or	ah, ah
- 000000C6  75 03	   *	    jne    @C0006
- 000000C8  89 4D FC		            mov row_first, ecx
-				        .ENDIF
-				        
-				        ; Move value at current index to ebx.
- 000000CB		   *@C0006:
- 000000CB  8B 1C 0E		        mov ebx, [esi + ecx]
-
-				        ; If first row, don't check up.
- 000000CE  83 F9 0C		        cmp ecx, 12
- 000000D1  7E 06		        jle skip_up
-				        ; Check slide up possibility.
- 000000D3  3B 5C 0E F0		        cmp ebx, [esi + ecx - 16]
- 000000D7  74 3C		        je possible
- 000000D9			    skip_up:
-				        ; If last row, don't check down.
- 000000D9  8B C1		        mov eax, ecx
- 000000DB  83 C0 10		        add eax, 16
- 000000DE  83 F8 3C		        cmp eax, 60
- 000000E1  77 06		        ja skip_down
-				        ; Check slide down possibility.
- 000000E3  3B 5C 0E 10		        cmp ebx, [esi + ecx + 16]
- 000000E7  74 2C		        je possible
- 000000E9			    skip_down:
-				        ; If first column, don't check left.
- 000000E9  3B 4D FC		        cmp ecx, row_first
- 000000EC  74 06		        je skip_left
-				        ; Check slide left possibility.
- 000000EE  3B 5C 0E FC		        cmp ebx, [esi + ecx - 4]
- 000000F2  74 21		        je possible
- 000000F4			    skip_left:
-				        ; If last column, don't check right.
- 000000F4  8B 45 FC		        mov eax, row_first
- 000000F7  83 C0 0C		        add eax, 12
- 000000FA  3B C8		        cmp ecx, eax
- 000000FC  74 06		        je skip_right
-				        ; Check slide right possibility.
- 000000FE  3B 5C 0E 04		        cmp ebx, [esi + ecx + 4]
- 00000102  74 11		        je possible
- 00000104			    skip_right:
-				        ; Move to next index in grid_array.
- 00000104  83 C1 04		        add ecx, 4
-				    .ENDW
- 00000107		   *@C0004:
- 00000107  83 F9 3C	   *	    cmp    ecx, 03Ch
- 0000010A  76 B1	   *	    jbe    @C0005
-				    ; Return 0 in eax.
- 0000010C  B8 00000000		    mov eax, 0
-				    ret
- 00000111  5B		   *	    pop    ebx
- 00000112  59		   *	    pop    ecx
- 00000113  C9		   *	    leave  
- 00000114  C3		   *	    ret    00000h
- 00000115			  possible:
-				    ; Return 1 in eax.
- 00000115  B8 00000001		    mov eax, 1
-				    ret
- 0000011A  5B		   *	    pop    ebx
- 0000011B  59		   *	    pop    ecx
- 0000011C  C9		   *	    leave  
- 0000011D  C3		   *	    ret    00000h
- 0000011E			CheckMoves ENDP
-
- 0000011E			main PROC PUBLIC
- 0000011E  E8 00000000 E	    call Randomize                 ; Set seed.
-
-				    ; Ask user to select a starting multiple
- 00000123  B8 00000000		    mov eax, 0
- 00000128  BA 000000C2 R	    mov edx, OFFSET startMsg
- 0000012D  E8 00000000 E	    call WriteString
- 00000132			    read:  
- 00000132  E8 00000000 E	       call ReadDec
- 00000137  83 F8 09		       cmp eax, 9
- 0000013A  7E 0C		       jle valid
-
- 0000013C  BA 000000E9 R	       mov  edx, OFFSET errMsg
- 00000141  E8 00000000 E	       call WriteString
- 00000146  EB EA		       jmp  read
-
- 00000148			    valid:
- 00000148  A2 0000014B R	       mov  multiple, al
- 0000014D  E8 00000000 E	       call ClrScr
-
-				    ; Calculate tile to win
- 00000152  66| BB 0400		    mov bx, 1024
- 00000156  66| F7 E3		    mul bx
- 00000159  A3 0000007B R	    mov target_tile, eax
-
-				    ; Initialize tile choices
- 0000015E  A0 0000014B R	    mov al, multiple
- 00000163  A2 0000014C R	    mov tile_choice[0], al
- 00000168  02 C0		    add al, al
- 0000016A  A2 0000014D R	    mov tile_choice[1], al
-
- 0000016F  E8 FFFFFE8C		    call PrintGrid                 ; Display empty board.
-
-				    ; Initialize grid with two tiles.
- 00000174  E8 00000000 E	    call UpdateGrid
- 00000179  E8 00000000 E	    call UpdateGrid
- 0000017E  E8 FFFFFEAF		    call UpdateScoreBoard
-
-				    ; Main game loop
- 00000183  A1 0000007B R	    mov eax, target_tile
-				    .WHILE (current_max < eax)
- 00000188  EB 3E	   *	    jmp    @C0009
- 0000018A		   *@C000A:
- 0000018A  50			          push eax
-
- 0000018B			          prompt:
- 0000018B  E8 00000000 E	          call UserPrompt         ; Prompts user for a direction to move.
- 00000190  E8 00000000 E	          call GridMove           ; Executes move and shifts tiles.
-
-				          ; Check valid move flag
- 00000195  80 3D 0000014F R	          cmp moveFlag, 0         ; Check if no slides happened
-	   00
- 0000019C  74 ED		          je prompt               ; If no tiles slid, ask user for input again
- 0000019E  C6 05 0000014F R	          mov moveFlag, 0
-	   00
-				          
-				          ; Check win condition before adding a new tile.
- 000001A5  A1 0000007F R	          mov eax, current_max
-
- 000001AA  E8 00000000 E	          call UpdateGrid          ; Adds a random tile after a user move.
- 000001AF  E8 FFFFFE7E		          call UpdateScoreBoard    ; Updates/Renders game variables on display.
-
- 000001B4  58			          pop eax
-				          .IF (tile_count >= 16)
- 000001B5  83 3D 00000087 R
-	   10		   *	    cmp    tile_count, 010h
- 000001BC  72 0A	   *	    jb	@C000B
- 000001BE  E8 FFFFFEDF		                call CheckMoves
- 000001C3  83 F8 00		                cmp eax, 0
- 000001C6  74 29		                je lose
-				          .ENDIF
-
-				    .ENDW
- 000001C8		   *@C000B:
- 000001C8		   *@C0009:
- 000001C8  39 05 0000007F R *	    cmp    current_max, eax
- 000001CE  72 BA	   *	    jb	@C000A
-
- 000001D0			     win:
-				          ; Move cursor above grid for win message.
- 000001D0  66| BA 0000		          mov dx, 0
- 000001D4  B6 04		          mov dh, 4
- 000001D6  E8 00000000 E	          call Gotoxy
- 000001DB  A1 0000007B R	          mov eax, target_tile
- 000001E0  E8 00000000 E	          call WriteDec
- 000001E5  BA 00000133 R	          mov edx, OFFSET winMsg
- 000001EA  E8 00000000 E	          call WriteString
- 000001EF  EB 1F		          jmp _exit
- 000001F1			    lose:
-				          ; Move cursor above grid for lose message.
- 000001F1  66| BA 0000		          mov dx, 0
- 000001F5  B6 04		          mov dh, 4
- 000001F7  E8 00000000 E	          call Gotoxy
- 000001FC  BA 00000105 R	          mov edx, OFFSET loseMsg
- 00000201  E8 00000000 E	          call WriteString
- 00000206  A1 0000007F R	          mov eax, current_max
- 0000020B  E8 00000000 E	          call WriteDec
+ 0000009F  C3				ret 
+ 000000A0			UserPrompt ENDP
 
 				END ; Notice that this is only END, not END main
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/07/21 02:29:26
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/07/21 03:03:31
 UserPrompt.asm						     Symbols 2 - 1
 
 
@@ -497,21 +244,14 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000150 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000227 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000082 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000000A0 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
 
                 N a m e                 Type     Value    Attr
 
-CheckMoves . . . . . . . . . . .	P Near	 000000A2 _TEXT	Length= 0000007C Private STDCALL
-  row_first  . . . . . . . . . .	DWord	 bp - 00000004
-  skip_up  . . . . . . . . . . .	L Near	 000000D9 _TEXT	
-  skip_down  . . . . . . . . . .	L Near	 000000E9 _TEXT	
-  skip_left  . . . . . . . . . .	L Near	 000000F4 _TEXT	
-  skip_right . . . . . . . . . .	L Near	 00000104 _TEXT	
-  possible . . . . . . . . . . .	L Near	 00000115 _TEXT	
 CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Clrscr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -546,15 +286,14 @@ GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 GetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Gotoxy . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-GridMove . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapAlloc  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InputTheDir  . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001C Private STDCALL
 IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-MapToDisplay . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MsgBoxAsk  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MsgBox . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -562,8 +301,6 @@ OpenInputFile  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 ParseDecimal32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ParseInteger32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-PrintGrid  . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000032 Private STDCALL
-  build_row  . . . . . . . . . .	L Near	 0000000B _TEXT	
 Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -598,9 +335,8 @@ Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-UpdateGrid . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-UpdateScoreBoard . . . . . . . .	P Near	 00000032 _TEXT	Length= 00000070 Private STDCALL
-UserPrompt . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+UserPrompt . . . . . . . . . . .	P Near	 0000007E _TEXT	Length= 00000022 Public STDCALL
+ValidateInput  . . . . . . . . .	P Near	 0000001C _TEXT	Length= 00000062 Private STDCALL
 WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteBinB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteBin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -619,13 +355,6 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 0000011E _TEXT	Length= 00000109 Public STDCALL
-  read . . . . . . . . . . . . .	L Near	 00000132 _TEXT	
-  valid  . . . . . . . . . . . .	L Near	 00000148 _TEXT	
-  prompt . . . . . . . . . . . .	L Near	 0000018B _TEXT	
-  win  . . . . . . . . . . . . .	L Near	 000001D0 _TEXT	
-  lose . . . . . . . . . . . . .	L Near	 000001F1 _TEXT	
-  _exit  . . . . . . . . . . . .	L Near	 00000210 _TEXT	
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -845,42 +574,25 @@ WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h
 WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
 WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
 black  . . . . . . . . . . . . .	Number	 00000000h   
-block_row  . . . . . . . . . . .	Byte	 00000016 _DATA	
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
-current_max  . . . . . . . . . .	DWord	 0000007F _DATA	Public STDCALL
-current_score  . . . . . . . . .	DWord	 00000083 _DATA	Public STDCALL
+clearPrompt  . . . . . . . . . .	Byte	 0000004F _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
-dh_pos . . . . . . . . . . . . .	Byte	 00000070 _DATA	Public STDCALL
-dir  . . . . . . . . . . . . . .	Byte	 0000007A _DATA	Public STDCALL
-divider  . . . . . . . . . . . .	Byte	 00000000 _DATA	
-dl_pos . . . . . . . . . . . . .	Byte	 00000075 _DATA	Public STDCALL
-errMsg . . . . . . . . . . . . .	Byte	 000000E9 _DATA	
+dirPrompt  . . . . . . . . . . .	Byte	 00000000 _DATA	
+dir  . . . . . . . . . . . . . .	Byte	 00000000 FLAT	External STDCALL
+errorMsg . . . . . . . . . . . .	Byte	 0000001D _DATA	
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
-grid_array . . . . . . . . . . .	DWord	 0000002C _DATA	Public STDCALL
 lightBlue  . . . . . . . . . . .	Number	 00000009h   
 lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
 lightGray  . . . . . . . . . . .	Number	 00000007h   
 lightGreen . . . . . . . . . . .	Number	 0000000Ah   
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
-loseMsg  . . . . . . . . . . . .	Byte	 00000105 _DATA	
 magenta  . . . . . . . . . . . .	Number	 00000005h   
-moveFlag . . . . . . . . . . . .	Byte	 0000014F _DATA	Public STDCALL
-multiple . . . . . . . . . . . .	Byte	 0000014B _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
-score1 . . . . . . . . . . . . .	Byte	 0000008B _DATA	
-score2 . . . . . . . . . . . . .	Byte	 0000009B _DATA	
-score3 . . . . . . . . . . . . .	Byte	 000000A9 _DATA	
-score4 . . . . . . . . . . . . .	Byte	 000000B6 _DATA	
-startMsg . . . . . . . . . . . .	Byte	 000000C2 _DATA	
-target_tile  . . . . . . . . . .	DWord	 0000007B _DATA	
-tile_choice  . . . . . . . . . .	Byte	 0000014C _DATA	Public STDCALL
-tile_count . . . . . . . . . . .	DWord	 00000087 _DATA	Public STDCALL
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
-winMsg . . . . . . . . . . . . .	Byte	 00000133 _DATA	
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
 
