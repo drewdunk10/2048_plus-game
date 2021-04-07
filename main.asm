@@ -28,8 +28,8 @@ score2 BYTE "Target Tile: ", 0
 score3 BYTE "Tile Count: ", 0
 score4 BYTE "Last Move: ", 0
 
-loseMsg	BYTE	"All tiles full. Game over. Your biggest tile: ", 0
-winMsg    BYTE "3072 tile reached. You win!", 0
+loseMsg	BYTE "No moves left. Game over. Your biggest tile: ", 0
+winMsg  BYTE "3072 tile reached. You win!", 0
 
 ; Flag to test for a valid move
 moveFlag BYTE 0
@@ -115,6 +115,75 @@ UpdateScoreBoard PROC
      ret 
 UpdateScoreBoard ENDP
 
+;-----------------------------------------------------
+CheckMoves PROC
+;
+; Checks a filled grid of tiles for any possible moves
+; remaining.
+; Returns: 0 if no moves remaining and 1 otherwise by
+; storing it in EAX
+;-----------------------------------------------------
+LOCAL row_first:DWORD
+    mov esi, OFFSET grid_array      ; Pointer to game board grid array.
+    mov ecx, 0                      ; Current index.
+    mov row_first, 0                ; Stores first index in row.
+    .WHILE (ecx <= 60)  ; 15 * 4 = 60 (last index in grid_array).
+        ; Get index of row first.
+        mov ax, cx
+        mov bl, 16            ; Mod by 16 to check if first element in row.
+        div bl                ; If it is the first element don't check left.
+
+         ; Remainder is stored in ah.
+        .IF ah == 0
+            mov row_first, ecx
+        .ENDIF
+        
+        ; Move value at current index to ebx.
+        mov ebx, [esi + ecx]
+
+        ; If first row, don't check up.
+        cmp ecx, 12
+        jle skip_up
+        ; Check slide up possibility.
+        cmp ebx, [esi + ecx - 16]
+        je possible
+    skip_up:
+        ; If last row, don't check down.
+        mov eax, ecx
+        add eax, 16
+        cmp eax, 60
+        ja skip_down
+        ; Check slide down possibility.
+        cmp ebx, [esi + ecx + 16]
+        je possible
+    skip_down:
+        ; If first column, don't check left.
+        cmp ecx, row_first
+        je skip_left
+        ; Check slide left possibility.
+        cmp ebx, [esi + ecx - 4]
+        je possible
+    skip_left:
+        ; If last column, don't check right.
+        mov eax, row_first
+        add eax, 12
+        cmp ecx, eax
+        je skip_right
+        ; Check slide right possibility.
+        cmp ebx, [esi + ecx + 4]
+        je possible
+    skip_right:
+        ; Move to next index in grid_array.
+        add ecx, 4
+    .ENDW
+    ; Return 0 in eax.
+    mov eax, 0
+    ret
+  possible:
+    ; Return 1 in eax.
+    mov eax, 1
+    ret
+CheckMoves ENDP
 
 main PROC PUBLIC
     call Randomize                 ; Set seed.
@@ -126,7 +195,7 @@ main PROC PUBLIC
     call UpdateScoreBoard
 
     ; Main game loop
-    .WHILE (tile_count < 16)
+    .WHILE (current_max < 3072)
           prompt:
           call UserPrompt         ; Prompts user for a direction to move.
           call GridMove           ; Executes move and shifts tiles.
@@ -138,14 +207,26 @@ main PROC PUBLIC
           
           ; Check win condition before adding a new tile.
           mov eax, current_max
-          .IF (eax >= target_tile)
-               jmp win
-          .ENDIF
 
           call UpdateGrid          ; Adds a random tile after a user move.
           call UpdateScoreBoard    ; Updates/Renders game variables on display.
+
+          .IF (tile_count >= 16)
+                call CheckMoves
+                cmp eax, 0
+                je lose
+          .ENDIF
+
     .ENDW
 
+     win:
+          ; Move cursor above grid for win message.
+          mov dx, 0
+          mov dh, 4
+          call Gotoxy
+          mov edx, OFFSET winMsg
+          call WriteString
+          jmp _exit
     lose:
           ; Move cursor above grid for lose message.
           mov dx, 0
@@ -155,15 +236,6 @@ main PROC PUBLIC
           call WriteString
           mov eax, current_max
           call WriteDec
-          jmp _exit
-
-     win:
-          ; Move cursor above grid for win message.
-          mov dx, 0
-          mov dh, 4
-          call Gotoxy
-          mov edx, OFFSET winMsg
-          call WriteString
 
      ; Move cursor below grid before exit.
      _exit:
