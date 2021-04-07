@@ -31,6 +31,9 @@ score4 BYTE "Last Move: ", 0
 loseMsg	BYTE "No moves left. Game over. Your biggest tile: ", 0
 winMsg  BYTE "3072 tile reached. You win!", 0
 
+; Flag to test for a valid move
+moveFlag BYTE 0
+
 .code
 ;-----------------------------------------------------
 PrintGrid PROC
@@ -193,8 +196,14 @@ main PROC PUBLIC
 
     ; Main game loop
     .WHILE (current_max < 3072)
-          call UserPrompt          ; Prompts user for a direction to move.
-          call GridMove          ; Executes move and shifts tiles.
+          prompt:
+          call UserPrompt         ; Prompts user for a direction to move.
+          call GridMove           ; Executes move and shifts tiles.
+
+          ; Check valid move flag
+          cmp moveFlag, 0         ; Check if no slides happened
+          je prompt               ; If no tiles slid, ask user for input again
+          mov moveFlag, 0
           
           ; Check win condition before adding a new tile.
           mov eax, current_max
