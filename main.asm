@@ -190,6 +190,8 @@ LOCAL row_first:DWORD
     ret
 CheckMoves ENDP
 
+
+
 main PROC PUBLIC
     call Randomize                 ; Set seed.
 

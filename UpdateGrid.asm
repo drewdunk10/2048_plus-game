@@ -68,7 +68,7 @@ LOCAL randRow:BYTE, randCol:BYTE
 
           ; Set text color to red
           mov eax, 0
-          mov eax, red +(black*16)
+          mov eax, white +(red*16)
           call setTextColor
 
           pop eax                      ; restore number to display

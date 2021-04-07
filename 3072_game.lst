@@ -1,6 +1,5 @@
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/07/21 02:48:48
-main.asm						     Page 1 - 1
-
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/07/21 02:29:26
+UserPrompt.asm						     Page 1 - 1
 
 				INCLUDE Irvine32.Inc
 			      C ; Include file for Irvine32.lib             (Irvine32.inc)
@@ -403,20 +402,9 @@ main.asm						     Page 1 - 1
  00000206  A1 0000007F R	          mov eax, current_max
  0000020B  E8 00000000 E	          call WriteDec
 
-				     ; Move cursor below grid before exit.
- 00000210			     _exit:
- 00000210  E8 FFFFFE1D		          call UpdateScoreBoard    ; Final update before exit.
- 00000215  66| BA 0000		          mov dx, 0
- 00000219  B6 14		          mov dh, 20
- 0000021B  E8 00000000 E	          call Gotoxy
-
-				          invoke ExitProcess,0
- 00000220  6A 00	   *	    push   +000000000h
- 00000222  E8 00000000 E   *	    call   ExitProcess
- 00000227			main ENDP
-				end main
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/07/21 02:48:48
-main.asm						     Symbols 2 - 1
+				END ; Notice that this is only END, not END main
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/07/21 02:29:26
+UserPrompt.asm						     Symbols 2 - 1
 
 
 
