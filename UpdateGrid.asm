@@ -66,10 +66,10 @@ LOCAL randRow:BYTE, randCol:BYTE
           ; Move to corresponding display position in console.
           call MapToDisplay
 
-          ; Set text color to red
+          ; Set background color to red
           mov eax, 0
           mov eax, white +(red*16)
-          call setTextColor
+          call SetTextColor
 
           pop eax                      ; restore number to display
           call WriteDec                ; display to console
@@ -77,7 +77,7 @@ LOCAL randRow:BYTE, randCol:BYTE
           ; Reset background/text color
           mov eax, 0
           mov eax, white +(black*16)
-          call setTextColor
+          call SetTextColor
      ret
 AddNewTile ENDP
 

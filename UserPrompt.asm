@@ -15,10 +15,13 @@ InputTheDir PROC
 ; Returns: sets dir in main
 ;-----------------------------------------------------
 	pushad
+	mov eax, white +(black*16)
+     call SetTextColor
+
 	mov edx, OFFSET dirPrompt; display a prompt
 	call	WriteString
 	call	ReadChar         	; Input the charater.
-	; call WriteChar			; Display direction choice.
+	; call WriteChar		; Display direction choice.
 	mov dir, al			; Save the direction in dir.
 	call ValidateInput		; Continue prompt until valid input.
 	popad
@@ -34,6 +37,8 @@ ValidateInput PROC
 ; Returns: nothing
 ;-----------------------------------------------------
 	mov edx, OFFSET errorMsg
+	mov eax, red + (16*black)
+	call SetTextColor
 	push edx
 
 	; compare character with valid choices

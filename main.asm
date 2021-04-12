@@ -34,7 +34,7 @@ loseMsg BYTE "No moves left. Game over. Your biggest tile: ", 0
 winMsg  BYTE " tile reached. You win!", 0
 
 multiple BYTE 1
-tile_choice BYTE 1, 2, 0  ; "random" tiles generated after each move
+tile_choice BYTE 0, 0  ; "random" tiles generated after each move
 
 ; Flag to test for a valid move
 moveFlag BYTE 0
@@ -93,6 +93,10 @@ UpdateScoreBoard PROC
      mov dl, 0
      call Gotoxy
 
+     ; Make sure to use standard color settings.
+     mov eax, white + (black*16)
+     call SetTextColor
+
      mov eax, current_score
      mov edx, OFFSET score1
      call WriteString
@@ -121,7 +125,7 @@ UpdateScoreBoard PROC
 UpdateScoreBoard ENDP
 
 ;-----------------------------------------------------
-CheckMoves PROC USES ecx ebx eax
+CheckMoves PROC USES ecx ebx
 ;
 ; Checks a filled grid of tiles for any possible moves
 ; remaining.
@@ -233,33 +237,32 @@ main PROC PUBLIC
     ; Main game loop
     mov eax, target_tile
     .WHILE (current_max < eax)
-          push eax
+       prompt:
+          call UserPrompt          ; Prompts user for a direction to move.
+          call GridMove            ; Executes move and shifts tiles.
 
-          prompt:
-          call UserPrompt         ; Prompts user for a direction to move.
-          call GridMove           ; Executes move and shifts tiles.
-
-          ; Check valid move flag
-          cmp moveFlag, 0         ; Check if no slides happened
-          je prompt               ; If no tiles slid, ask user for input again
-          mov moveFlag, 0
-          
-          ; Check win condition before adding a new tile.
-          mov eax, current_max
+          cmp moveFlag, 0          ; Check if no slides happened
+          je prompt                ; If no tiles slid, ask user for input again
+          mov moveFlag, 0          ; Reset move flag
 
           call UpdateGrid          ; Adds a random tile after a user move.
           call UpdateScoreBoard    ; Updates/Renders game variables on display.
 
-          pop eax
+          ; Check if there are any avaliable moves left
           .IF (tile_count >= 16)
+             check:
                 call CheckMoves
                 cmp eax, 0
-                je lose
+                je lose            ; If no moves left, end game
           .ENDIF
 
+          mov eax, target_tile     ; Restore target_tile for loop condition
     .ENDW
 
      win:
+          mov eax, green + (black*16)
+          call SetTextColor
+
           ; Move cursor above grid for win message.
           mov dx, 0
           mov dh, 4
@@ -270,6 +273,9 @@ main PROC PUBLIC
           call WriteString
           jmp _exit
     lose:
+          mov eax, red + (black*16)
+          call SetTextColor
+
           ; Move cursor above grid for lose message.
           mov dx, 0
           mov dh, 4

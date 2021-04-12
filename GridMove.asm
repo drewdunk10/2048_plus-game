@@ -388,39 +388,33 @@ LOCAL base:DWORD, start:DWORD
 slideRight ENDP
 
 ;-----------------------------------------------------
-SetColor PROC USES eax ebx ecx
+SetColor PROC USES eax ebx ecx edx
 ;
 ; Takes value of tile and sets text to the appropriate
 ; color that corresponds to that tile.
 ; Receives: value of tile in EAX.
 ; Returns: nothing
 ;-----------------------------------------------------
-    mov ecx, 0      ; Track number of divisions.
+    mov ecx, 1      ; Track number of divisions (plus 1 to skip black text).
 
     ; Initial division by base multiple.
-    mov bl, 3
-    div bl
+    xor dx, dx
+    movzx bx, multiple
+    div bx
 
     ; Future divisions will be by 2.
-    mov bl, 2
-    .WHILE (al > 1)
-        ; Clear remainder to only use quotient.
-        xor ah, ah
-        div bl
+    mov bx, 2
+
+    ; Get square root of remaining number (plus 1)
+    .WHILE (ax > 1)
+        xor dx, dx       ; Clear remainder
+        div bx
 
         inc ecx
     .ENDW
 
-    ; Mod by 15 to use all available colors.
+    ; Set text to calculated color.
     mov eax, ecx
-    mov bl, 15      ; Mod by 16 to check if first element in row.
-    div bl                ; If it is the first element don't check left.
-
-    ; Remainder is stored in ah, which is the color to use.
-    shr ax, 8
-    inc al
-    xor ah, ah
-
     call setTextColor
 
     ret
