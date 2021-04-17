@@ -2,7 +2,7 @@ INCLUDE Irvine32.Inc
 INCLUDE UserPrompt.inc
 
 .data
-dirPrompt	BYTE "Enter the direction (WASD): ", 0
+dirPrompt	BYTE "Enter the direction (WASD) or quit game (Q): ", 0
 errorMsg	BYTE	"Invalid Move, must be of one of WASD. Try again: ", 0
 clearPrompt BYTE 50 DUP(" "), 0
 
@@ -45,7 +45,7 @@ ValidateInput PROC
 	mov ebx, 0
 	.WHILE ebx == 0
 		INVOKE Str_ucase, ADDR dir
-		.IF dir == 'A' || dir == 'S' || dir == 'D' || dir == 'W'
+		.IF dir == 'A' || dir == 'S' || dir == 'D' || dir == 'W' || dir == 'Q'
 			mov ebx, 1
 		.ELSE
 			mov dx, 0

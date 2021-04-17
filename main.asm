@@ -239,6 +239,10 @@ main PROC PUBLIC
     .WHILE (current_max < eax)
        prompt:
           call UserPrompt          ; Prompts user for a direction to move.
+
+          cmp dir, 'Q'             ; If user selected quit option, jump to exit.
+          je _exit
+
           call GridMove            ; Executes move and shifts tiles.
 
           cmp moveFlag, 0          ; Check if no slides happened

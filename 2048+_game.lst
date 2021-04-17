@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/17/21 17:48:45
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/17/21 17:41:03
 UserPrompt.asm						     Page 1 - 1
 
 
@@ -162,7 +162,7 @@ UserPrompt.asm						     Page 1 - 1
  000000BD			UserPrompt ENDP
 
 				END ; Notice that this is only END, not END main
-Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/17/21 17:48:45
+Microsoft (R) Macro Assembler Version 14.28.29336.0	    04/17/21 17:41:03
 UserPrompt.asm						     Symbols 2 - 1
 
 
